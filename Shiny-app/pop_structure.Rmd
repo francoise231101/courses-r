@@ -1,0 +1,6 @@
+---
+title: 'Population Structure'
+author: Francoise
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+---
+Population Structure

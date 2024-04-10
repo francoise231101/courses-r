@@ -1,0 +1,7 @@
+---
+title: 'Analyzing Association : marginal approach'
+author: Francoise
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+---
+
+marginal approach

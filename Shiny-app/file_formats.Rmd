@@ -1,0 +1,7 @@
+---
+title: 'Quality control : File formats'
+author: Francoise
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+---
+
+File formats

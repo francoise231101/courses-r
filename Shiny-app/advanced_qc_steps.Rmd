@@ -1,0 +1,7 @@
+---
+title: 'Quality control : Advanced quality control steps'
+author: Francoise
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+---
+
+Advanced quality control steps

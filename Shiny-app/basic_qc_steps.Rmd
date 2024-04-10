@@ -1,0 +1,8 @@
+---
+title: 'Quality control : Basic quality control steps'
+author: Francoise
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+---
+
+
+Basic quality control steps

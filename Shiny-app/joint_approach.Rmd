@@ -1,0 +1,7 @@
+---
+title: 'Analyzing Association : joint approach'
+author: Francoise
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+---
+
+joint approach

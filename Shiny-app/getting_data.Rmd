@@ -1,0 +1,7 @@
+---
+title: 'Quality control : Getting data'
+author: Francoise
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+---
+
+getting data

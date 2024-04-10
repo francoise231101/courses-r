@@ -1,0 +1,7 @@
+---
+title: 'Analyzing Association'
+author: Francoise
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+---
+
+Analyzing Association

@@ -6,22 +6,27 @@ library(shinydashboard)
 # Define the user interface for the Shiny app
 ui <- dashboardPage(
   dashboardHeader(
-    title = "R Tutorials for Newbies"
+    title = "R Tutorials"
     # Add any additional header customization here
   ),
 
   dashboardSidebar(
     sidebarMenu(
       menuItem("Introduction", tabName = "introduction"),
-      menuItem("Data Types", tabName = "data_types"),
-      menuItem("Data Structures", tabName = "data_structures"),
-      menuItem("Data Analysis", tabName = "data_analysis"),
-      # Add more menu items for each tutorial topic
-
-      # Optionally, you can include sub-items
-      menuItem("Vectors", tabName = "vectors", icon = icon("angle-right")),
-      menuItem("Data Frames", tabName = "data_frames", icon = icon("angle-right"))
-      # Add more sub-items as needed
+      menuItem("Quality control", tabName = "quality_control",
+               menuSubItem("Getting the data", tabName = "getting_data"),
+               menuSubItem("Downloading PLINK", tabName = "downloading_plink"),
+               menuSubItem("File formats", tabName = "file_formats"),
+               menuSubItem("Basic quality control steps", tabName = "basic_qc_steps"),
+               menuSubItem("Advanced quality control steps", tabName = "advanced_qc_steps")
+      ),
+      menuItem("Imputation", tabName = "imputation"),
+      menuItem("Population Structure", tabName = "pop_structure"),
+      menuItem("Analyzing association", tabName = "analyzing_association",
+               menuSubItem("Marginal Approach", tabName = "marginal_approach"),
+               menuSubItem("Joint Approach", tabName = "joint_approach")
+      ),
+      menuItem("Post GWAS", tabName = "post_gwas")
     )
   ),
 
@@ -29,20 +34,21 @@ ui <- dashboardPage(
     # Main content area
     tabItems(
       # Placeholder for the content of each tutorial
-      tabItem(tabName = "introduction", "Introduction Content"),
-      tabItem(tabName = "data_types", "Data Types Content"),
-      tabItem(tabName = "data_structures", "Data Structures Content"),
-      tabItem(tabName = "data_analysis", "Data Analysis Content"),
-      # Add more tabItems for each tutorial topic
-
-      # Placeholder for sub-items
-      tabItem(tabName = "vectors", "Vectors Content"),
-      tabItem(tabName = "data_frames", "Data Frames Content")
-      # Add more tabItems for sub-items
+      tabItem(tabName = "introduction", includeMarkdown("./introduction.Rmd")),
+      tabItem(tabName = "quality_control", includeMarkdown("./quality_control.Rmd")),
+      tabItem(tabName = "getting_data", includeMarkdown("./getting_data.Rmd")),
+      tabItem(tabName = "downloading_plink", includeMarkdown("./downloading_plink.Rmd")),
+      tabItem(tabName = "file_formats", includeMarkdown("./file_formats.Rmd")),
+      tabItem(tabName = "basic_qc_steps", includeMarkdown("./basic_qc_steps.Rmd")),
+      tabItem(tabName = "advanced_qc_steps", includeMarkdown("./advanced_qc_steps.Rmd")),
+      tabItem(tabName = "imputation", includeMarkdown("./imputation.Rmd")),
+      tabItem(tabName = "pop_structure", includeMarkdown("./pop_structure.Rmd")),
+      tabItem(tabName = "analyzing_association", includeMarkdown("./analyzing_association.Rmd")),
+      tabItem(tabName = "marginal_approach", includeMarkdown("./marginal_approach.Rmd")),
+      tabItem(tabName = "joint_approach", includeMarkdown("./joint_approach.Rmd")),
+      tabItem(tabName = "post_gwas", includeMarkdown("./post_gwas.Rmd"))
     )
   )
-
-  # Add any additional UI components (e.g., dashboardFooter()) if needed
 )
 
 # Return the user interface

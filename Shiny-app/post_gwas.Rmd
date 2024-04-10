@@ -1,0 +1,36 @@
+---
+title: 'GWAS 教程：數據格式、摘要統計與質量控制'
+author: Francoise
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+---
+
+```{r knitr_setup, include=FALSE, purl=FALSE}
+library(knitr)
+library(kableExtra)
+set.seed(1)
+knitr::opts_knit$set(aliases=c(h = 'fig.height', w = 'fig.width'))
+knitr::opts_chunk$set(comment="#", message=FALSE, collapse=TRUE, cache=FALSE, tidy=FALSE, fig.align="center")
+knitr::knit_hooks$set(small.mar = function(before, options, envir) {
+  if (before) par(mar = c(4, 4, .1, .1))
+})
+```
+需使用的 R 套件
+```{r}
+library(data.table)
+library(dplyr)
+library(ggplot2)
+```
+
+本教程將運用 data.table 套件來讀取及處理數據框架，使用者可根據需要選擇其他套件。除一個例外，檔案均為空格分隔的文本檔，可用任何方法打開。
+獲取數據
+
+本教程將使用 PennCATH 研究中的遺傳風險因素數據進行冠狀動脈疾病分析。數據可從以下來源之一下載（內容相同）：
+
+- [Data (zip)](https://d1ypx1ckp5bo16.cloudfront.net/penncath/penncath.zip): Windows
+- [Data (tar)](https://d1ypx1ckp5bo16.cloudfront.net/penncath/penncath.tar.gz): Mac/Linux
+
+下載並解壓縮數據；如果願意，也可以閱讀相關論文：
+
+* [Paper](http://www.ncbi.nlm.nih.gov/pubmed/21239051)
+
+下面將假設解壓縮的數據文件保存在名為 data 的文件夾中；如果您將它們儲存在其他位置，請更改目錄參考。
