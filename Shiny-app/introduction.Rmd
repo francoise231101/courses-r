@@ -1,5 +1,5 @@
 ---
-title: 'GWAS 教程介紹'
+title: '全基因組關聯研究（GWAS）教程介紹'
 author: Francoise
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 output:
@@ -7,33 +7,30 @@ output:
     toc: false
 ---
 
-# 歡迎！
+全基因組關聯研究（Genome-Wide Association Studies, GWAS）是一種用於在人群中識別基因與特定疾病或表型之間關聯的研究方法。通過比較具有特定疾病或特徵的個體與不具有該疾病或特徵的個體的基因組，GWAS旨在發現與疾病風險或其他表型特徵相關的基因變異。此方法已廣泛應用於遺傳學和基因組學研究，有助於理解多種疾病和特徵的遺傳基礎。
 
-歡迎使用這份資源開始學習全基因組關聯研究（Genome Wide Association Studies, GWAS）。
+R語言作為一種統計和圖形的程式語言，已成為進行GWAS分析的強大工具。其豐富的統計分析功能與生物信息學套件，使得從質量控制、遺傳信息的插補到關聯性分析等GWAS各階段的處理變得可行且高效。
 
-本教程受到[Reed2015](https://dx.doi.org/10.1002/sim.6605)和[Marees2017](https://onlinelibrary.wiley.com/doi/abs/10.1002/mpr.1608)中相似工作的啟發。遺憾的是，2015年的教程所使用的軟件目前略顯過時——部分R包已發生變化或不再提供——因而本教程進行了相應的更新。
+本教程將通過以下五個部分，引領讀者逐步了解並應用R語言進行GWAS分析：
 
-本教程共分為四部分：
+### (1) Data Formats, Summary Statistics, and QC
 
-## [(1) Data Formats, Summary Statistics, and QC](quality_control.html)
+本節將介紹GWAS分析中常見的數據格式、如何進行數據摘要統計以及質量控制的重要性。讀者將學會如何使用R語言來處理和篩選數據，以確保分析的質量和準確性。
 
-該節主要介紹從不同檔案類型到數據初步檢查的基礎知識，以及如何排除可能影響分析結果的數據部分。
+### (2) Imputation
 
-## [(2) Imputation](imputation.html)
+遺傳信息的插補是GWAS中不可或缺的一環，本節將討論在缺失數據處理中的策略及其在R中的實現方法，確保分析結果的完整性和可靠性。
 
-"Imputation"部分描述了如何通過邏輯方法替換缺失值來處理缺失數據的過程。特別是對於不能處理缺失值的SNP數據分析方法（如回歸分析），必須在分析前解決缺失數據問題。
+### (3) Population Structure
 
-## [(3) Population Structure](population_structure.html)
+探討人群結構及其對GWAS分析影響的重要性。本節將介紹如何使用R語言識別和調整人群結構的影響，從而避免分析結果的潛在偏誤。
 
-"Population Structure"節幫助讀者考慮可能存在於數據集中的潛在混淆因素（例如家族關係）。若不明確進行調整，這些因素可能會錯誤地放大分析結果，從而導致推論偏誤。
+### (4) Analyzing association
 
-## [(4) Analyzing association](analyzing_association.html)
+本節深入探討如何使用R進行關聯性分析，包括單變量和多變量分析。讀者將學習如何識別和評估基因與疾病或特徵之間的關聯性。
 
-正如其名，"Analyzing association"是GWAS的核心目的。本部分分為兩節，分別為單獨考慮每個SNP的"Marginal"分析和同時考慮所有SNP的"Joint/simultaneous"分析：
+### (5) Post Analysis
 
-- [Marginal](marginal_analysis.html)
-- [Joint/simultaneous](joint_analysis.html)
+分析後的步驟同樣重要，本節將介紹如何將GWAS分析結果進行深入解釋和功能注釋，以及如何利用R語言進行結果的視覺化展示。
 
-## [Post Analysis](post_gwas.html)
-
-在"Post Analysis"部分，將嘗試將分析結果轉化為臨床上有意義的信息。舉例而言，單純告知某個SNP的信息可能缺乏意義，除非進行了深入研究。相對地，如果指出某個SNP的變異與氯通道的異常功能相關，則更具有臨床意義。
+通過本教程，讀者將掌握使用R語言進行全基因組關聯研究的關鍵技術和方法，從而在研究領域邁出堅實的一步。

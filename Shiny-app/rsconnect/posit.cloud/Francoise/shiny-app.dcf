@@ -1,0 +1,12 @@
+name: shiny-app
+title: Shiny-app
+username: Francoise
+account: Francoise
+server: posit.cloud
+hostUrl: https://api.posit.cloud/v1
+appId: 7986943
+bundleId: 8479288
+url: https://posit.cloud/content/7986943
+version: 1
+asMultiple: FALSE
+asStatic: FALSE

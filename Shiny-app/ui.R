@@ -2,6 +2,7 @@
 
 library(shiny)
 library(shinydashboard)
+library(markdown)
 
 # Define the user interface for the Shiny app
 ui <- dashboardPage(
