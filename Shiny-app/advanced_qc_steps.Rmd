@@ -4,4 +4,24 @@ author: Francoise
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 ---
 
-Advanced quality control steps
+# 高級質量控制步驟
+
+## 性別檢查
+
+通常情況下，由於我們在樣本中有個體的基因數據，包括X染色體，我們可以確定（或至少估計）他們的“遺傳性別”，並將其與其臨床信息中記錄的性別進行比較。若存在差異則非常麻煩，因為這可能是樣本被交換或標籤錯誤的結果（還有其他解釋）。
+
+不幸的是，此數據集不包含X染色體，因此我們無法在這裡展示這一步驟。
+
+一般情況下，我們通常使用PLINK進行此操作。相應的命令稱為 `--check-sex`。相關文檔: [1.9 文檔](https://www.cog-genomics.org/plink/1.9/basic_stats#check_sex)。
+
+請注意，在`clinical.csv`中記錄的性別與`.fam`文件中記錄的性別之間不存在差異：
+
+```{r check-sex}
+table(penncath$fam$sex, clinical$sex)
+```
+
+在我們的數據中，這就足以讓我們知道可以繼續進行。
+
+## 剪枝、聚合和LD過濾
+
+基於碱基位置相近的SNP通常會出現[連鎖不平衡](https://www.sciencedirect.com/topics/neuroscience/linkage-disequilibrium#:~:text=Linkage%20disequilibrium%2C%20the%20phenomenon%20whereby,proxy%20for%20the%20risk%20variant.)（LD），我們稱之為“SNP之間存在LD”。當SNP存在LD時，這可能會對分析產生顯著影響，特別是當方法是邊緣分析時（即逐個測試一個SNP）。[Florian Privé](https://privefl.github.io/)，`bigstatsr`和`bigsnpr`包的作者，已經寫了一些很好的[文檔](https://privefl.github.io/bigsnpr/articles/pruning-vs-clumping.html)，關於何時以及如何使用剪枝/聚合作為QC步驟來處理LD。

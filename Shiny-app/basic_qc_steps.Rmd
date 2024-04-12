@@ -4,5 +4,198 @@ author: Francoise
 date: '`r format(Sys.Date(), "%B %d, %Y")`'
 ---
 
+# 基本品質控制步驟
 
-Basic quality control steps
+在安裝了PLINK之後，我們可以從R中開始一些簡單的品質控制（QC）步驟：
+
+### 檢查染色體
+
+在獲取任何基因數據時，一個有用的第一步是回答問題：SNP位於哪些染色體上？在我們的數據中，我們可以在我們的`bigSNP`對象的`map`元素中看到這一點：
+
+```{r}
+penncath$map$chromosome |> table()
+```
+
+我們注意到這裡有兩點：（1）我們沒有任何性染色體。請記住，我們的示例數據代表人類；其他生物的染色體編號不同，所以解釋以下評論時，請考慮特定數據的上下文，和（2）我們沒有任何染色體編號在1-23之外。有時，具有未知染色體的SNP會被標記為0。另一個[常見的慣例](https://www.cog-genomics.org/plink/1.9/data#irreg_output)是將粒線體變異標記為染色體'26'。這是一個可能會干擾後續分析的問題，所以請務必檢查您的PLINK文件中所代表的數據。
+
+### 缺失數據
+
+任何具有大量缺失數據（即，許多樣本沒有該標記的數據）的SNP在我們的數據中可能表示有疑問的質量；這些錯誤捕獲的SNP通常會從分析中排除。同樣地，具有大量缺失數據的任何樣本都表明可能存在有關該樣本處理的問題。查看我們的基因型數據（即，`.bed`文件中的數據），我們會發現一些SNP有缺失值。
+
+```{r}
+class(penncath$genotypes) # 注意：這是一個文件支持的對象
+?bigstatsr::big_counts # 用於摘要數據的方便函數
+# 查看這個函數的作用
+big_counts(penncath$genotypes, ind.row = 1:10, ind.col = 1:10)
+# 按*SNP*摘要基因型數據
+snp_stats <- big_counts(penncath$genotypes)
+dim(snp_stats) # 第4行有NA計數
+boxplot(snp_stats[4,]) 
+summary(snp_stats[4,]) 
+```
+
+肯定有一些具有大量缺失值的SNP--至少有一個SNP在所有1401個樣本中都缺失！一個常見的做法是排除具有>10%缺失數據的SNP。我們實際上稍後會做子集操作，現在我們只是在探索。
+
+我們還需要考慮具有高比例缺失值的任何樣本：
+
+```{r}
+# 按*樣本*摘要基因型數據
+sample_stats <- big_counts(penncath$genotypes, byrow = TRUE)
+# 單元格[1,1]顯示第1個SNP的“0”基因型的人數
+sample_stats[, 1:10]
+boxplot(sample_stats[4,])
+
+summary(sample_stats[4,])
+```
+
+我們注意到在每個人中缺失值的數量沒有任何異常值--如果有異常值，我們將需要過濾掉具有高比例缺失數據的樣本。
+
+### 雜合度檢查
+
+如果一個個體有大量的A/B呼叫，但沒有A/A或B/B呼叫，或者反之，這可能表明該樣本存在問題--我們通常期望所有樣本都有一些雜合呼叫和一些同源呼叫。
+
+```{r zygosity}
+allele_dat <- sweep(x = sample_stats[1:3,], 
+                    # ^ 在這裡不要計算第4行--不要在這裡計算NA
+                    MARGIN = 1,
+                    STATS = c(0, 1, 0),
+                    FUN = "*") |> colSums()
+
+boxplot(allele_dat/ncol(snp_stats))
+hist(allele_dat/ncol(snp_stats),
+     main = "雜合度",
+     xlab = "具有異型基因型的比例樣本") # 應該是呈鐘形曲線形狀
+```
+
+這裡沒有太大的異常值......這是一個好的跡象。
+
+### 小等位基因頻率（MAF）過濾
+
+作為第一步，讓我們看一下哪些SNP的小等位基因發生得非常少--在典型的GWAS中，我們需要排除具有低變異的SNP。我們看到有一些SNP的所有1401個樣本都具有A/A等位基因，或者主要/主要等位基因。為了分析目的，我們通常需要排除這樣的SNP，其中變異是罕見的。
+
+```{r}
+hist(snp_stats[1,])
+summary(snp_stats[1,])
+```
+
+直方圖和摘要顯示有一些SNP，其中很少，如果有的話，樣本具有小等位基因。我們需要過濾掉這些罕見的變異。
+
+### Hardy-Weinberg平衡過濾
+
+[Hardy-Weinberg原理](https://en.wikipedia.org/wiki/Hardy-Weinberg_principle)指出，在假設隨機交配的情況下，基因型的分佈應該遵循概率為$\pi$的二項分佈，該概率等於小等位基因頻率。如果這種情況沒有發生，這表明：
+
+1. 這個SNP的基因型測定存在錯誤，或者
+2. 交配不是隨機的
+
+在現實世界中，交配當然不是隨機的，這使得很難基於HWE來排除SNP。通常的建議是只有當HWE嚴重違反時（例如，$p < 10^{-10}$用於HWE測試的檢驗），才排除SNP。我們將使用這個標準作為標準。
+
+### 關聯性檢查
+
+人們應用的另一個常見的QC檢查是看看他們的數據集中是否有任何人是相互關聯的（即，他們的基因組比兩個無關的人的基因組更相似）。這是有道理的，因為大多數統計方法假設樣本獨立，如果您在分析中有，比如說，兩個姐妹，他們實際上並不獨立。然而，用於評估關聯性的工具與用於評估人口結構的方法相關聯，這是一個複雜的話題，我將在教程的['結構'模組](docs/population_structure.html)中討論。
+
+### 摘要和實施
+總而言之，這裡是（幾乎）所有GWAS需要考慮的基本QC步驟：
+
+（1）我們需要檢查我們的數據中有哪些染色體被表示
+
+（2）我們需要過濾掉具有大量缺失值的樣本（例如，在上游數據收集/分析中質量差的樣本）
+
+（3）我們需要檢查雜合度，並過濾出明顯的異常值樣本
+
+（4）我們需要過濾掉小等位基因頻率非常低的SNP
+
+（5）我們需要過濾掉遠離Hardy-Weinberg平衡的SNP
+
+（6）我們需要考慮我們數據中的相關性--已知的相關性以及任何潛在的關聯結構。
+
+現在，讓我們嘗試真正進行一些品質控制--以下代碼將產生一個錯誤，我認為這對於您了解是有益的：
+
+```{r, eval=FALSE}
+path_to_qc_penncath <- snp_plinkQC(
+  plink.path
+
+ = "~/bin/plink", # 您需要根據您的機器更改此選項！
+  prefix.in = "data/penncath", # 輸入當前數據
+  prefix.out = "data/qc_penncath", # 創建*新*具有品質控制數據的rds文件
+  maf = 0.01
+)
+```
+
+上面的命令是PLINK的一個包裝器，因此它會在控制台上打印出消息，這樣您就可以跟著PLINK的操作。我們試圖過濾掉僅包含至少1\% MAF的變異體（SNP），但我們收到了來自PLINK的此錯誤：
+
+`Error: .bim file has a split chromosome`
+`Use --make-bed by itself to remedy this.`
+
+這意味著我們的`penncath`數據在進行QC之前需要一些重排。從R中，輸入以下行來解決PLINK錯誤消息中指出的問題：
+
+```{r eval=FALSE}
+system("plink --bfile data/penncath --make-bed --out data/penncath_clean")
+```
+
+讓我們逐一解釋這些選項（或'flags'）： 
+
+  - `plink`：調用程序
+  
+  - `--bfile`：告訴PLINK您有`.bed/.bim/.fam`文件（PLINK也可以使用其他文件類型，但這超出了本教程的範圍）。 `data/penncath`是包含我們的PLINK數據的文件夾的名稱。
+  
+  -  `--make-bed`：告訴PLINK製作一個清理過的`.bed`文件。也將創建新的`.fam`和`.bim`文件，以確保這些3個文件始終同步。
+  
+  - `--out`：告訴PLINK將要創建的新數據放在哪裡以及如何命名這些新文件。我正在`data/`文件夾中使用帶有前綴`penncath_clean`的文件。
+  
+運行上面的命令也會創建`data/penncath_clean.log`，該文件記錄了您用於創建此數據集的標誌。檢查該文件以確保一切運行正常（如果有問題，它會告訴您）。PLINK還會在工作時向控制台打印出進度消息。
+  
+現在我們已經解決了“分裂染色體”的問題，我們可以在一個命令中執行QC步驟（1），（2），（4）和（5）：
+
+```{r, eval=FALSE}
+path_to_qc_penncath_bed <- snp_plinkQC(
+  plink.path = "~/bin/plink", # 再次，您可能需要根據您的機器更改這個選項！
+  prefix.in = "data/penncath_clean", # 輸入數據
+  prefix.out = "data/qc_penncath", # 創建*新*具有品質控制數據的rds文件
+  maf = 0.01, # 過濾掉MAF < 0.01的SNP
+  geno = 0.1, # 過濾掉缺失數據超過10%的SNP
+  mind = 0.1, # 過濾掉缺失數據超過10%的SNP
+  hwe = 1e-10, # 過濾掉HWE測試的p值低於此閾值的SNP
+  autosome.only = TRUE # 我們只想要1-22號染色體
+)
+```
+
+“在幕後”，PLINK正在應用我們想要的所有過濾器，並創建一組新的
+
+帶有前綴“qc_penncath”的bed/bim/fam文件。我們將在即將進行的分析中使用這些QC'd文件。
+
+步驟（3）我們已通過視覺檢查完成--在這個數據集中，這就是我們需要的。步驟（6）需要很多解釋，所以這一步有[自己的模塊](docs/population_structure.html)在這個教程中。
+
+現在，讓我們實際進行子集操作。**重要提示：**請記住的關鍵是，當您在PLINK文件中對基因數據進行子集操作時，您需要對`map`對象和基因型進行子集操作--如果不這樣做，這些對象將不再匹配，您將遇到災難性的行不匹配問題。如果您正在使用`PLINK`（任何版本）在命令行上或在`R`中使用`bigsnpr`，那麼這將由系統自動處理。但是，如果您將.bim/.fam文件讀取為數據框（就像我們一開始所做的那樣），那麼您需要確保同時對這兩個文件進行子集操作。
+
+讓我們看一下我們的新的`RDS`對象，這是我們剛剛使用我們的QC步驟創建的：
+
+```{r eval=FALSE}
+qc_file_path <- snp_readBed(bedfile = path_to_qc_penncath_bed)
+
+qc <- snp_attach(qc_file_path)
+
+dim(qc$genotypes)
+```
+
+```{r include=FALSE}
+qc <- snp_attach(rdsfile = "data/qc_penncath.rds")
+```
+
+我們看到在我們的新的品質控制數據`qc_penncath`中代表有`r nrow(qc$genotypes)`樣本和`r ncol(qc$genotypes)`變異。
+
+### 內存問題的注意事項
+
+`bigsnpr`中的`bigSNP`對象的一個很棒的功能是這些對象將大型基因型數據（即，`.bed`文件中的數據）保存為文件支持的--通俗地說，文件支持的對象允許您在全局環境中擁有一個對指向磁盤上存儲的大型數據文件的對象。如果您只想將一些SNP的基因型數據讀入內存，我們可以這樣做：
+
+```{r}
+# 注意：數據是文件支持的
+class(penncath$genotypes)
+
+# 只讀入一些SNP
+first_10_snps <- penncath$genotypes[,1:10]
+
+# 這些現在作為矩陣存儲在內存中
+class(first_10_snps); dim(first_10_snps)
+
+# 查看一下
+head(first_10_snps)
