@@ -1,20 +1,109 @@
----
-title: 'Quality control : Getting data'
-author: Francoise
-date: '`r format(Sys.Date(), "%B %d, %Y")`'
-editor_options: 
-  chunk_output_type: console
----
 
-```{r knitr_setup, include=FALSE, purl=FALSE}
-library(knitr)
-library(kableExtra)
-set.seed(1)
-knitr::opts_knit$set(aliases=c(h = 'fig.height', w = 'fig.width'))
-knitr::opts_chunk$set(comment="#", message=FALSE, collapse=TRUE, cache=FALSE, tidy=FALSE, fig.align="center")
-knitr::knit_hooks$set(small.mar = function(before, options, envir) {
-  if (before) par(mar = c(4, 4, .1, .1))
-})
+# 在Linux系統中安裝R和RStudio的教程
+
+**作者：Francoise**  
+**日期：April 12, 2024**
+
+# 前言
+
+本教程提供在Linux系統上安裝R語言和RStudio整合開發環境的步驟。R是一種用於統計分析和圖形的程式語言，RStudio則是一個支持R的強大開發環境。
+
+# 安裝R
+
+## 1. 開啟終端
+
+首先，需啟動Linux系統的終端。
+
+## 2. 添加R存儲庫
+
+根據Linux發行版的不同，添加CRAN存儲庫的方法也會有所不同。以下示例針對Ubuntu發行版：
+
+```bash
+sudo apt update
+sudo apt upgrade
 ```
 
-getting data
+為了驗證存儲庫的軟件包，需要添加GPG密鑰：
+```bash
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
+sudo add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/"
+```
+
+## 3. 安裝R
+
+更新存儲庫列表後，安裝R：
+
+```bash
+sudo apt update
+sudo apt install -y r-base
+```
+
+# 安裝RStudio
+
+## 1. 下載RStudio
+
+從RStudio官方網站下載適合您Linux發行版的RStudio安裝包。以下命令示例用於下載適合Ubuntu的版本：
+
+```bash
+wget https://download1.rstudio.org/desktop/bionic/amd64/rstudio-X.X.X-amd64.deb
+```
+
+## 2. 安裝RStudio
+
+下載完成後，安裝RStudio：
+
+```bash
+sudo apt install -y ./rstudio-X.X.X-amd64.deb
+```
+
+# 驗證安裝
+
+## 檢查R的安裝
+
+在終端輸入 `R`，按Enter鍵，檢查是否能進入R的命令行界面。或者查看R的版本：
+
+```bash
+R --version
+```
+
+## 檢查RStudio的安裝
+
+在應用程序菜單中尋找並啟動RStudio，檢查其是否能正常運行。
+
+至此，R和RStudio應該已在您的Linux系統上成功安裝，可開始進行數據分析和統計計算的工作。
+
+# 取得資料
+
+本教程將使用來自PennCATH冠狀動脈疾病遺傳風險因子的研究資料。請從以下其中一個來源下載資料（內容相同）：
+
+- [資料（zip檔）](https://d1ypx1ckp5bo16.cloudfront.net/penncath/penncath.zip)：Windows
+- [資料（tar檔）](https://d1ypx1ckp5bo16.cloudfront.net/penncath/penncath.tar.gz)：Mac/Linux
+
+下載並解壓縮/解壓縮資料；如果將其存儲在其他地方，請更改目錄引用。
+
+# 下載 PLINK 
+
+PLINK是一個**命令行工具**（即，通常在終端/Shell中運行的軟件）。[PLINK](https://academic.oup.com/gigascience/article/4/1/s13742-015-0047-8/2707533?login=false)是哈佛大學的研究人員開發的，在遺傳學研究中被廣泛使用。PLINK有多個版本--對於我們的教程，版本1.9就足夠了（這是上面連結的方法論文中引用的版本）。您可以在[這個網站](https://www.cog-genomics.org/plink/1.9/)免費下載PLINK 1.9--請確保選擇與您的操作系統相匹配的下載選項。
+
+接下來，您需要選擇一個文件夾來保存在您的計算機上。
+
+- 如果您已經是命令行用戶：將其放在`~/.local/bin`是典型的做法--但可以選擇任何您喜歡的地方。
+- 如果您是命令行的新手，暫時將PLINK保存在您運行本教程的同一個文件夾中是可以的。當我們到達本教程的後面部分時，您將需要告訴計算機在哪裡尋找PLINK的可執行文件--也就是說，您的`R`會話必須知道`plink.exe`位於哪裡。您可以立即在您的`R`控制台中運行`getwd()`--默認情況下，這是您的Rmarkdown或R腳本文件將查找PLINK的地方。如果您將在多個項目中使用PLINK，請在您的計算機上選擇一個中央位置（我在我的Mac上使用`~/bin`）並將`plink.exe`保存在這裡。然後，當您需要使用PLINK進行某些操作時，您可以提供文件路徑`~/myfolder/plink`。學習命令
+
+行是值得的，您可以查看[這個教程](https://missing.csail.mit.edu/2020/course-shell/)來開始學習更多。
+  
+為了確保PLINK已經正確安裝，運行類似以下的命令：
+
+```{r eval=FALSE}
+system("plink --version")
+```
+
+`system()`命令是一種您可以通過`R`運行命令的方式。**注意**：您可能需要告訴您的計算機在哪裡尋找`plink`可執行文件--例如，如果您下載了PLINK並將其保存在`~/Downloads/`中^[注意：`~`只是表示您的主目錄]，您將需要運行：
+
+```{r eval=FALSE}
+system("~/Downloads/plink --version")
+```
+
+如果PLINK安裝正確，您將看到一條消息打印出來，類似於這樣：
+
+`PLINK v1.90b6.26 64-bit (2 Apr 2022)`

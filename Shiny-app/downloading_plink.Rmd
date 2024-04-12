@@ -1,7 +1,0 @@
----
-title: 'Quality control : Downloading PLINK'
-author: Francoise
-date: '`r format(Sys.Date(), "%B %d, %Y")`'
----
-
-Downloading PLINK

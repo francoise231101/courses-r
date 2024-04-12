@@ -16,7 +16,6 @@ ui <- dashboardPage(
       menuItem("Introduction", tabName = "introduction"),
       menuItem("Quality control", tabName = "quality_control",
                menuSubItem("Getting the data", tabName = "getting_data"),
-               menuSubItem("Downloading PLINK", tabName = "downloading_plink"),
                menuSubItem("File formats", tabName = "file_formats"),
                menuSubItem("Basic quality control steps", tabName = "basic_qc_steps"),
                menuSubItem("Advanced quality control steps", tabName = "advanced_qc_steps")
@@ -38,7 +37,6 @@ ui <- dashboardPage(
       tabItem(tabName = "introduction", includeMarkdown("./introduction.Rmd")),
       tabItem(tabName = "quality_control", includeMarkdown("./quality_control.Rmd")),
       tabItem(tabName = "getting_data", includeMarkdown("./getting_data.Rmd")),
-      tabItem(tabName = "downloading_plink", includeMarkdown("./downloading_plink.Rmd")),
       tabItem(tabName = "file_formats", includeMarkdown("./file_formats.Rmd")),
       tabItem(tabName = "basic_qc_steps", includeMarkdown("./basic_qc_steps.Rmd")),
       tabItem(tabName = "advanced_qc_steps", includeMarkdown("./advanced_qc_steps.Rmd")),
